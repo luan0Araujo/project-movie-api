@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @AllArgsConstructor
@@ -68,16 +69,16 @@ public class MovieService implements IMovieService{
     }
 
     @Override
-    public String deleteMovie(MovieTo movie) {
+    public String deleteMovie(MovieTo movieTo) {
 
-        List<Movie> movieDel = findMovieByFilter(movie);
+        Optional<Movie> movieDel = movieRepository.findById(movieTo.getMovieId());
 
-        if (movieDel.size() > 1){
-            throw new RuntimeException("Mais que um item");
+        if (movieDel.isEmpty()){
+            throw new RuntimeException("Movie não existe");
         }
 
         try {
-            movieRepository.delete(movieDel.get(0));
+            movieRepository.delete(movieDel.get());
         }
         catch (RuntimeException e){
             throw new RuntimeException(e);
@@ -89,10 +90,10 @@ public class MovieService implements IMovieService{
     @Override
     public String updadeMovie(MovieTo movieTo) {
 
-        List<Movie> movie = findMovieByFilter(movieTo);
+        Optional<Movie> movie = movieRepository.findById(movieTo.getMovieId());
 
-        if (movie.size() > 1){
-            throw new RuntimeException("Mais que um item");
+        if (movie.isEmpty()){
+            throw new RuntimeException("Movie não existe");
         }
 
         Genre genre = genreRepository.getGenreByName(movieTo.getGenreName());
@@ -101,16 +102,15 @@ public class MovieService implements IMovieService{
             throw new RuntimeException("Genero não existe");
         }
 
-        movie.get(0).setMovieName(movieTo.getMovieName());
-        movie.get(0).setMovieDesc(movieTo.getMovieDesc());
-        movie.get(0).setInsertId(movieTo.getInsertId());
-        movie.get(0).setInsertDate(new Date());
-        movie.get(0).setGenre(genre);
+        movie.get().setMovieName(movieTo.getMovieName());
+        movie.get().setMovieDesc(movieTo.getMovieDesc());
+        movie.get().setInsertId(movieTo.getInsertId());
+        movie.get().setInsertDate(new Date());
+        movie.get().setGenre(genre);
 
-        movieRepository.save(movie.get(0));
+        movieRepository.save(movie.get());
 
-
-        return "";
+        return "Movie Atualizado";
     }
 
 
